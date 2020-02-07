@@ -1,5 +1,6 @@
 const express = require('express');
 const feedRoutes = require('./routes/feed');
+const authRoutes = require('./routes/auth');
 const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
@@ -35,13 +36,15 @@ app.use(bodyParser.json()); // application/json
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
 // error handling (received exceptions by throw)
 app.use((err, req, resp, next) => {
   console.log(err);
   const status = err.statusCode || 500;
   const message = err.message;
-  resp.status(status).json({message: message})
+  const data = err.data;
+  resp.status(status).json({message: message, data: data})
 });
 
 app.listen(8080);

@@ -74,8 +74,9 @@ exports.createPost = (req, resp, next) => {
     const title = req.body.title;
     const content = req.body.content;
     const imageUrl = req.file.path;
+    const creator = req.userId;
 
-    let post = new Post(id, title, content, imageUrl, 'Marvin Díaz', new Date());
+    let post = new Post(id, title, content, imageUrl, creator, new Date());
 
     post.save()
         .then(() => {
@@ -136,6 +137,14 @@ exports.updatePost = (req, resp, next) => {
             if (imageUrl !== post.imageUrl) {
                 clearImage(post.imageUrl);
             }
+
+            // validar si el usuario logueado es el usuario original
+            if (post.creatorName !== req.userId) {
+                const error = new Error('Not Authorize');
+                error.statusCode = 403;
+                throw error;
+            }
+
             post.title = title;
             post.content = content;
             post.imageUrl = imageUrl;
@@ -168,6 +177,13 @@ exports.deletePost = (req, resp, next) => {
             }
 
             post = new Post(rows[0].id, rows[0].title, rows[0].content, rows[0].imageUrl, rows[0].creatorName, rows[0].createdAt);
+
+            // validar si el usuario logueado es el usuario original
+            if (post.creatorName !== req.userId) {
+                const error = new Error('Not Authorize');
+                error.statusCode = 403;
+                throw error;
+            }
 
             clearImage(post.imageUrl);
 
