@@ -7,11 +7,24 @@ const path = require('path');
 
 exports.getPosts = (req, resp, next) => {
     console.log('Getting posts');
-    Post.find()
+    const page = req.query.page || 1;
+    const perPage = 2;
+    const skip = (page -1) * perPage;
+    let totalItems;
+
+    Post.count()
+        .then(([rows], fieldData) => {
+            totalItems = rows[0].count;
+            return Post.find(skip, perPage)
+        })
         .then(([rows], fieldData) => {
             let data = rows.map(m => new PostDTO(m));
             console.log(data);
-            resp.status(200).json({message: "Fetched Posts", posts: data});
+            resp.status(200).json({
+                message: "Fetched Posts",
+                posts: data,
+                totalItems: totalItems
+            });
         })
         .catch(err => {
             if (!err.statusCode) {
