@@ -47,7 +47,7 @@ app.use((err, req, resp, next) => {
   resp.status(status).json({message: message, data: data})
 });
 
-let server = app.listen(8080);
+let server = app.listen(process.env.PORT || 8080);
 const io = require('./socket').init(server);
 io.on('connection', socket => {
    console.log('Client connected');
