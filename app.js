@@ -7,6 +7,7 @@ const multer = require('multer');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const fs = require('fs');
+const logger = require('./util/logger');
 
 const app = express();
 
@@ -50,7 +51,7 @@ app.use('/auth', authRoutes);
 
 // error handling (received exceptions by throw)
 app.use((err, req, resp, next) => {
-  console.log(err);
+  logger.error(err);
   const status = err.statusCode || 500;
   const message = err.message;
   const data = err.data;
@@ -60,6 +61,6 @@ app.use((err, req, resp, next) => {
 let server = app.listen(process.env.PORT || 8080);
 const io = require('./socket').init(server);
 io.on('connection', socket => {
-   console.log('Client connected');
+    logger.info('Client connected');
 });
 

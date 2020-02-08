@@ -4,10 +4,11 @@ const Post = require('../models/post');
 const PostDTO = require('../models/postDTO');
 const fs = require('fs');
 const path = require('path');
-const webSocket = require('../socket')
+const webSocket = require('../socket');
+const logger = require('../util/logger');
 
 exports.getPosts = (req, resp, next) => {
-    console.log('Getting posts');
+    logger.info('Getting posts');
     const page = req.query.page || 1;
     const perPage = 2;
     const skip = (page -1) * perPage;
@@ -36,7 +37,7 @@ exports.getPosts = (req, resp, next) => {
 
 exports.getPost = (req, resp, next) => {
     const postId = req.params.postId;
-    console.log('Getting post ' + postId);
+    logger.info('Getting post ' + postId);
     Post.findById(postId)
         .then(([rows], fieldData) => {
             if (!rows || rows.length === 0) {
@@ -55,6 +56,7 @@ exports.getPost = (req, resp, next) => {
 };
 
 exports.createPost = (req, resp, next) => {
+    logger.info('Creating posts');
     // VALIDATE
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -99,7 +101,7 @@ exports.createPost = (req, resp, next) => {
 
 exports.updatePost = (req, resp, next) => {
     const postId = req.params.postId;
-    console.log('Updating post ' + postId);
+    logger.info('Updating post ' + postId);
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -176,7 +178,7 @@ exports.updatePost = (req, resp, next) => {
 
 exports.deletePost = (req, resp, next) => {
     const postId = req.params.postId;
-    console.log('Deleting post ' + postId);
+    logger.info('Deleting post ' + postId);
 
     let post;
     Post.findById(postId)
@@ -217,5 +219,5 @@ exports.deletePost = (req, resp, next) => {
 
 const clearImage = filePath => {
     filePath = path.join(__dirname, '..', filePath);
-    fs.unlink(filePath, err => {console.log(err)});
+    fs.unlink(filePath, err => {logger.error(err)});
 };

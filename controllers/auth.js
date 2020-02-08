@@ -38,7 +38,6 @@ exports.login = (req, resp, next) => {
     let loadedUser;
     User.findById(email)
         .then(([rows], fieldData) => {
-            console.log(rows);
             if (!rows || rows.length === 0) {
                 const error = new Error('User with this email could not be found');
                 error.statusCode = 401;
