@@ -4,8 +4,12 @@ const authRoutes = require('./routes/auth');
 const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
+const helmet = require('helmet');
 
 const app = express();
+
+// security headers
+app.use(helmet());
 
 const fileStorage = multer.diskStorage({
     destination: (req, resp, cb) => {
