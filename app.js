@@ -5,11 +5,17 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const multer = require('multer');
 const helmet = require('helmet');
+const morgan = require('morgan');
+const fs = require('fs');
 
 const app = express();
 
+
 // security headers
 app.use(helmet());
+// logging
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'});
+app.use(morgan('combined', {stream: accessLogStream}));
 
 const fileStorage = multer.diskStorage({
     destination: (req, resp, cb) => {
