@@ -4,6 +4,7 @@ const Post = require('../models/post');
 const PostDTO = require('../models/postDTO');
 const fs = require('fs');
 const path = require('path');
+const webSocket = require('../socket')
 
 exports.getPosts = (req, resp, next) => {
     console.log('Getting posts');
@@ -19,7 +20,6 @@ exports.getPosts = (req, resp, next) => {
         })
         .then(([rows], fieldData) => {
             let data = rows.map(m => new PostDTO(m));
-            console.log(data);
             resp.status(200).json({
                 message: "Fetched Posts",
                 posts: data,
@@ -44,7 +44,6 @@ exports.getPost = (req, resp, next) => {
                 error.statusCode = 422;
                 throw error;
             }
-            console.log(rows[0]);
             resp.status(200).json({message: "Post fetched", post: new PostDTO(rows[0])});
         })
         .catch(err => {
@@ -78,9 +77,17 @@ exports.createPost = (req, resp, next) => {
 
     let post = new Post(id, title, content, imageUrl, creator, new Date());
 
+
     post.save()
         .then(() => {
-            resp.status(201).json({ message: "Post created successfully", post: new PostDTO(post)});
+
+            let dto = new PostDTO(post);
+
+            // web sockets
+            webSocket.getIO().emit('posts-channel', { action: 'create', post: dto }); // key, object
+
+            // response
+            resp.status(201).json({ message: "Post created successfully", post: dto});
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -153,7 +160,11 @@ exports.updatePost = (req, resp, next) => {
 
         })
         .then( () => {
-            resp.status(200).json({ message: "Post updated", post: new PostDTO(post)});
+            const dto = new PostDTO(post);
+            // web sockets
+            webSocket.getIO().emit('posts-channel', { action: 'update', post: dto }); // key, object
+            // response
+            resp.status(200).json({ message: "Post updated", post: dto});
         })
         .catch(err => {
             if (!err.statusCode) {
@@ -190,6 +201,9 @@ exports.deletePost = (req, resp, next) => {
             return post.delete(); // se usa el siguiente then superior (de abajo)
         })
         .then( () => {
+            // we socket
+            webSocket.getIO().emit('posts-channel', { action: 'delete', post: postId }); // key, object
+            //response
             resp.status(200).json({ message: "Post deleted"});
         })
         .catch(err => {

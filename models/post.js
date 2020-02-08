@@ -27,7 +27,7 @@ module.exports = class Post {
         if (count) {
             sql = `select count (0) count from ( ${base} ) T`
         } else {
-            sql = ` ${base} limit ${skip}, ${perPage}`
+            sql = ` ${base} order by created_at desc limit ${skip}, ${perPage}`
         }
 
         return sql;
